@@ -8,17 +8,16 @@ import com.Incamar.IncaCore.mappers.VesselMapper;
 import com.Incamar.IncaCore.models.Vessel;
 import com.Incamar.IncaCore.repositories.VesselRepository;
 import com.Incamar.IncaCore.services.VesselService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class VesselServiceImpl implements VesselService {
-    @Autowired
-    VesselRepository vesselRepository;
-    @Autowired
-    private VesselMapper vesselMapper;
+    private final VesselRepository vesselRepository;
+    private final VesselMapper vesselMapper;
 
     @Override
     public Page<VesselResponseDto> getAllVessels(Pageable pageable) {

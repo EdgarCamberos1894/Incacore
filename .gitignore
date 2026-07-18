@@ -1,0 +1,18 @@
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Node and Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# Java and Maven
+backend/IncaCore/target/
+
+# IDE and OS files
+.idea/
+.vscode/
+*.iml
+.DS_Store

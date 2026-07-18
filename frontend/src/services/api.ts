@@ -2,8 +2,10 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import type { NormalizedApiError } from "@/types/api";
 
+const apiOrigin = process.env.NEXT_PUBLIC_API_URL ?? "https://footalent-03.onrender.com";
+
 const api = axios.create({
-  baseURL: "https://footalent-03.onrender.com/api",
+  baseURL: `${apiOrigin}/api`,
   // timeout: 10000,
   headers: {
     "Content-Type": "application/json",

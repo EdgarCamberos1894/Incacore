@@ -5,8 +5,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.MailAuthenticationException;
-import org.springframework.mail.MailSendException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -144,12 +142,12 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
   }
 
-  @ExceptionHandler({MailSendException.class, org.springframework.mail.MailAuthenticationException.class})
+  @Deprecated
   public ResponseEntity<ErrorResponse> handleMailExceptions(Exception ex, HttpServletRequest request) {
     String message = ex.getMessage();
-    if (ex instanceof MailAuthenticationException) {
+    if (ex instanceof EmailSendingException) {
       message = "Error de autenticación al enviar el correo: verifica usuario y contraseña del SMTP";
-    } else if (ex instanceof MailSendException && ex.getCause() != null) {
+    } else if (ex instanceof EmailSendingException && ex.getCause() != null) {
       message = "Error al enviar el correo: " + ex.getCause().getMessage();
     }
 

@@ -1,4 +1,28 @@
 
+## Quick start
+
+This repository contains the current full-stack version of IncaCore.
+
+### Prerequisites
+
+- Docker Desktop for the PostgreSQL and backend stack.
+- Node.js 20+ for the frontend.
+
+### Run locally
+
+1. Copy `backend/IncaCore/.env.example` to `backend/IncaCore/.env` and replace the development secrets.
+2. Run `docker compose up --build` from the repository root. This starts PostgreSQL on port `5435` and the backend on `http://localhost:8080`.
+3. Copy `frontend/.env.example` to `frontend/.env.local`.
+4. Run `npm ci` and `npm run dev` from `frontend`.
+5. Open `http://localhost:3000` and API documentation at `http://localhost:8080/swagger-ui/index.html`.
+
+### Verification
+
+- Frontend: `npm run lint` and `npm run build` from `frontend`.
+- Backend: `./mvnw test` from `backend/IncaCore`.
+
+The `prod` Spring profile validates the database schema and disables SQL logging. Set `SPRING_PROFILES_ACTIVE=prod` only when the target database is fully managed through migrations.
+
 <!-- ===================== 1. CABECERA PRINCIPAL ===================== -->
 <div align="center" style="font-family: 'Fira Code', monospace; font-size: 2rem; margin: 30px 0 20px 0;">
   <h4>======== INCACORE - Readme - Agosto 2025 ========</h4>
