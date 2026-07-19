@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "https://footalent-03.onrender.com",
+  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080",
   timeout: 10000,
   withCredentials: true,
   headers: {
