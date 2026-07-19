@@ -23,6 +23,19 @@ This repository contains the current full-stack version of IncaCore.
 
 The `prod` Spring profile validates the database schema and disables SQL logging. Set `SPRING_PROFILES_ACTIVE=prod` only when the target database is fully managed through migrations.
 
+### Demo access
+
+The public demo uses an administrator account seeded by the database migrations:
+
+```text
+Email: juan.perez@example.com
+Password: P@ssw0rd!
+```
+
+Accounts are created by administrators, so public registration is intentionally unavailable. After signing in, review the dashboard, vessels, maintenance, inventory, and service tickets. The test users in `V6__add_users_to_test.sql` provide supervisor and operator roles for permission checks.
+
+For the demo branch, set `SPRING_PROFILES_ACTIVE=demo`. It creates representative fleet, maintenance, inventory, and service-ticket data only when the database has no vessels.
+
 <!-- ===================== 1. CABECERA PRINCIPAL ===================== -->
 <div align="center" style="font-family: 'Fira Code', monospace; font-size: 2rem; margin: 30px 0 20px 0;">
   <h4>======== INCACORE - Readme - Agosto 2025 ========</h4>

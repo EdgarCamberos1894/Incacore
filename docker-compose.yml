@@ -21,7 +21,7 @@ services:
     env_file:
       - ./backend/IncaCore/.env
     environment:
-      SPRING_PROFILES_ACTIVE: dev
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-demo}
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-incacore}
       DB_USERNAME: ${POSTGRES_USER:-incacore}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-incacore}

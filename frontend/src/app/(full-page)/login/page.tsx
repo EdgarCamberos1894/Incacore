@@ -23,6 +23,10 @@ export default function LoginPage() {
   const emailRegex =
     /^(?:[a-zA-Z0-9_'^&\/+-])+(?:\.(?:[a-zA-Z0-9_'^&\/+-])+)*@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
   const reduceMotion = useReducedMotion();
+  const demoCredentials: LoginRequest = {
+    email: "juan.perez@example.com",
+    password: "P@ssw0rd!",
+  };
 
   useEffect(() => {
     try {
@@ -42,13 +46,17 @@ export default function LoginPage() {
           setFormData((d) => ({ ...d, email: stored }));
         }
       } catch {}
-    } else {
-      setFormData((d) => ({ ...d, email: "", password: "" }));
     }
   }, [remember]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const loadDemoCredentials = () => {
+    setFormData(demoCredentials);
+    setErrors({});
+    setRemember(false);
   };
 
   const validate = () => {
@@ -147,6 +155,9 @@ export default function LoginPage() {
             validateStatus={errors.email ? "error" : ""}
             help={errors.email}
           >
+            <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-700">
+              Correo
+            </label>
             <Input
               id="email"
               name="email"
@@ -187,11 +198,14 @@ export default function LoginPage() {
             validateStatus={errors.password ? "error" : ""}
             help={errors.password}
           >
+            <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-700">
+              ContraseÃ±a
+            </label>
             <Input.Password
               id="password"
               name="password"
               value={formData.password}
-              autoComplete="new-password"
+              autoComplete="current-password"
               onChange={handleChange}
               size="large"
               placeholder="Ingresa tu contraseña"
@@ -273,6 +287,33 @@ export default function LoginPage() {
             {isSubmitting ? "Iniciando..." : "Iniciar sesión"}
           </Button>
         </Form>
+
+        <section className="border-t border-slate-200 pt-4" aria-labelledby="demo-access-title">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <Typography.Text id="demo-access-title" strong>
+                Acceso de demostraciÃ³n
+              </Typography.Text>
+              <Typography.Paragraph className="!mb-2 !mt-1 !text-sm !text-slate-600">
+                Cuenta administradora con datos de ejemplo para recorrer el sistema.
+              </Typography.Paragraph>
+            </div>
+            <span className="shrink-0 rounded border border-sky-200 bg-sky-50 px-2 py-1 text-xs font-medium text-sky-800">
+              Demo
+            </span>
+          </div>
+          <div className="mb-3 grid gap-1 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+            <span>{demoCredentials.email}</span>
+            <span>ContraseÃ±a: {demoCredentials.password}</span>
+          </div>
+          <Button block onClick={loadDemoCredentials}>
+            Cargar credenciales de demostraciÃ³n
+          </Button>
+        </section>
+
+        <Typography.Text className="text-center !text-xs !text-slate-500">
+          Las cuentas del personal son creadas por un administrador.
+        </Typography.Text>
       </Card>
     </motion.div>
   );

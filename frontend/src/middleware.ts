@@ -5,6 +5,13 @@ export function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
   const pathname = req.nextUrl.pathname;
 
+  if (pathname === "/register") {
+    const loginUrl = req.nextUrl.clone();
+    loginUrl.pathname = "/login";
+    loginUrl.searchParams.set("reason", "internal_accounts");
+    return NextResponse.redirect(loginUrl);
+  }
+
   // Si es una ruta de autenticación y ya hay sesión válida, redirige al dashboard
   if (isAuthPath(pathname)) {
     if (token && !isJwtExpired(token)) {
