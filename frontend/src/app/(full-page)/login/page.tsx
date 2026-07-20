@@ -199,7 +199,7 @@ export default function LoginPage() {
             help={errors.password}
           >
             <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-700">
-              ContraseÃ±a
+              Contraseña
             </label>
             <Input.Password
               id="password"
@@ -292,7 +292,7 @@ export default function LoginPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <Typography.Text id="demo-access-title" strong>
-                Acceso de demostraciÃ³n
+                Acceso de demostración
               </Typography.Text>
               <Typography.Paragraph className="!mb-2 !mt-1 !text-sm !text-slate-600">
                 Cuenta administradora con datos de ejemplo para recorrer el sistema.
@@ -304,10 +304,10 @@ export default function LoginPage() {
           </div>
           <div className="mb-3 grid gap-1 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
             <span>{demoCredentials.email}</span>
-            <span>ContraseÃ±a: {demoCredentials.password}</span>
+            <span>Contraseña: {demoCredentials.password}</span>
           </div>
           <Button block onClick={loadDemoCredentials}>
-            Cargar credenciales de demostraciÃ³n
+            Cargar credenciales de demostración
           </Button>
         </section>
 

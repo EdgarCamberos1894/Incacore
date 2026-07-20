@@ -5,7 +5,7 @@
 
 # Node and Next.js
 frontend/node_modules/
-frontend/.next/
+frontend/.next*/
 frontend/out/
 
 # Java and Maven

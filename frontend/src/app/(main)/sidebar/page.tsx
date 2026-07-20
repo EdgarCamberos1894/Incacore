@@ -42,8 +42,7 @@ const MaintenanceIcon = () => (
         0 0 4.32-1.407 5.484 5.484 0 0 0 1.464-3.005 3.62 3.62 0 0 0-.007-1.237A3.437 
         3.437 0 0 0 22.928 2.5l-2.026 2.019a1.012 1.012 0 0 1-1.4.014zm1.6 2.6a2.994 2.994 
         0 0 1-2.6.841 2 2 0 0 0-1.725.566L8.521 16.8a1.982 1.982 0 0 0-.552 1.782 3.049 
-        3.049 0 0 1-.841 2.568 2.933 2.933 0 0 1-2.114.87 3.007 3.007 0 0 1-2.128-.87l-.
-        008-.007a3.007 3.007 0 0 1-.87-2.128 2.933 2.933 0 0 1 .87-2.115 3.048 3.048 0 0 
+        3.049 0 0 1-.841 2.568 2.933 2.933 0 0 1-2.114.87 3.007 3.007 0 0 1-2.128-.87l-.008-.007a3.007 3.007 0 0 1-.87-2.128 2.933 2.933 0 0 1 .87-2.115 3.048 3.048 0 0
         1 2.567-.841 1.982 1.982 0 0 0 1.783-.552l8.259-8.259a2 2 0 0 0 .566-1.725 2.994 
         2.994 0 0 1 .841-2.6 2.692 2.692 0 0 1 .672-.488 2.947 2.947 0 0 0-.346 1.393 3.029 
         3.029 0 0 0 .863 2.107l.005.012a3.029 3.029 0 0 0 2.107.863 2.947 2.947 0 0 0 1.393-.346 
@@ -71,6 +70,23 @@ const InventoryIcon = () => (
         d="M325.876,83.004h-46.83V0.096h-67.938v82.908h-46.83l80.799,80.331L325.876,83.004z M231.524,103.42V20.512h27.105v82.908 h17.75l-31.303,31.123l-31.303-31.123H231.524z"
       />
     </g>
+  </svg>
+);
+
+const ServiceTicketIcon = () => (
+  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M8 3h7l3 3v15H8a2 2 0 01-2-2V5a2 2 0 012-2z"
+    />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M15 3v4h4M9 12h6M9 16h4"
+    />
   </svg>
 );
 
@@ -132,8 +148,7 @@ const ShippingIcon = () => (
       -41.926v44.835H94.42v133.986L52.54,289.68L114.37,490 L245,432.18L375.63,490l61.83
       -200.32L395.579,264.864z M220.594,20.261h48.811v65.783h-48.811V20.261z M178.668,106.304h21.666 
       h89.332h21.666v24.574H178.668V106.304z M114.681,151.139h260.638v101.72L245,175.64l-130.319,
-      77.219V151.139z M362.98,462.25 L245,410.03l-117.98,52.22l-50.4-163.28L245,199.19l168.
-      38,99.78L362.98,462.25z"
+      77.219V151.139z M362.98,462.25 L245,410.03l-117.98,52.22l-50.4-163.28L245,199.19l168.38,99.78L362.98,462.25z"
       ></path>
     </g>
   </svg>
@@ -172,7 +187,7 @@ const defaultMenuItems: MenuItem[] = [
     id: "service-ticket",
     label: "Boleta de servicio",
     href: "/boleta-servicio",
-    icon: <InventoryIcon />,
+    icon: <ServiceTicketIcon />,
   },
 
   // { id: "config", label: "Configuración", href: "/config", icon: <ConfigIcon /> },
@@ -252,33 +267,23 @@ const Sidebar: React.FC<ExtendedSidebarProps> = ({
     <div
       className={`${collapsed ? "w-16" : "w-64"} flex h-screen flex-col transition-all duration-200 ${classes.container}`}
     >
-      {/* Header */}
-      <div className="flex min-h-[64px] items-center justify-center border-b border-current/10 p-4">
-        {collapsed ? (
-          <Image src={logo} alt="Logo" width={85} height={40} className="object-cover" />
-        ) : (
-          <>
-            <Image src={logo} alt="Logo" width={85} height={40} className="object-cover" />
-            {!collapsed && (
-              <button
-                onClick={() => setCollapsed(true)}
-                className={`ml-2 rounded-md p-1.5 transition-all duration-150 ${classes.collapseButton}`}
-                title="Colapsar sidebar"
-              >
-                <CollapseIcon collapsed={collapsed} />
-              </button>
-            )}
-          </>
+      <div
+        className={`flex min-h-[64px] items-center border-b border-current/10 ${
+          collapsed ? "justify-center p-2" : "justify-between px-4 py-3"
+        }`}
+      >
+        {!collapsed && (
+          <Image src={logo} alt="IncaCore" width={85} height={40} className="object-cover" />
         )}
-        {collapsed && (
-          <button
-            onClick={() => setCollapsed(false)}
-            className={`right- absolute top-1/2 z-50 -translate-y-1/2 rounded-l-md p-2 text-white shadow-md`}
-            title="Expandir sidebar"
-          >
-            <CollapseIcon collapsed={collapsed} />
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => setCollapsed((value) => !value)}
+          className={`flex h-9 w-9 items-center justify-center rounded-md transition-colors duration-150 ${classes.collapseButton}`}
+          title={collapsed ? "Expandir sidebar" : "Colapsar sidebar"}
+          aria-label={collapsed ? "Expandir sidebar" : "Colapsar sidebar"}
+        >
+          <CollapseIcon collapsed={collapsed} />
+        </button>
       </div>
 
       {/* Navigation  */}

@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface VesselItemRepository extends JpaRepository<VesselItem,Long> {
 
@@ -25,6 +26,7 @@ public interface VesselItemRepository extends JpaRepository<VesselItem,Long> {
     );
 
     List<VesselItem> findByVesselId(Long vesselId);
+    Optional<VesselItem> findByVesselIdAndName(Long vesselId, String name);
 
     @Query("""
         SELECT i

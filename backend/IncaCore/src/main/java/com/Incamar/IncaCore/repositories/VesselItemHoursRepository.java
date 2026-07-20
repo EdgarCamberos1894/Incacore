@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface VesselItemHoursRepository extends JpaRepository<VesselItemHours, Long> {
 
-
+    boolean existsByDescription(String description);
 }

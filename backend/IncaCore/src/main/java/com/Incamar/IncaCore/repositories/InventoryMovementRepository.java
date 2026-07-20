@@ -11,6 +11,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface InventoryMovementRepository extends JpaRepository<InventoryMovement, Long> {
 
+    boolean existsByReason(String reason);
+
     @Query("SELECT DISTINCT im FROM InventoryMovement im " +
             "JOIN MovementDetails md ON md.inventoryMovement = im " +
             "JOIN md.itemWarehouse iw " +
