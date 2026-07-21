@@ -288,6 +288,13 @@ export default function LoginPage() {
           </Button>
         </Form>
 
+        <div className="flex items-center justify-center gap-1 text-sm text-slate-600">
+          <span>¿No tienes una cuenta?</span>
+          <Button type="link" className="!h-auto !p-0" onClick={() => router.push("/register")}>
+            Regístrate
+          </Button>
+        </div>
+
         <section className="border-t border-slate-200 pt-4" aria-labelledby="demo-access-title">
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -312,7 +319,7 @@ export default function LoginPage() {
         </section>
 
         <Typography.Text className="text-center !text-xs !text-slate-500">
-          Las cuentas del personal son creadas por un administrador.
+          También puedes probar el flujo de registro con tu propio correo.
         </Typography.Text>
       </Card>
     </motion.div>

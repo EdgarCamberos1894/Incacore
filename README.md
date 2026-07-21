@@ -32,7 +32,7 @@ Email: juan.perez@example.com
 Password: P@ssw0rd!
 ```
 
-Accounts are created by administrators, so public registration is intentionally unavailable. After signing in, review the dashboard, vessels, maintenance, inventory, and service tickets. The test users in `V6__add_users_to_test.sql` provide supervisor and operator roles for permission checks.
+The demo profile also exposes the registration flow so portfolio visitors can test it with their own email. Public registration cannot create administrator accounts; it is limited to operational roles and remains administrator-only outside the `demo` profile. After signing in, review the dashboard, vessels, maintenance, inventory, and service tickets. The test users in `V6__add_users_to_test.sql` provide supervisor and operator roles for permission checks.
 
 For the demo branch, set `SPRING_PROFILES_ACTIVE=demo`. The idempotent initializer creates any missing demo records without deleting or duplicating existing data. The scenario includes five vessels, three warehouses, twelve inventory items, stock alerts, recent inventory movements, vessel equipment and usage hours, maintenance orders in multiple states, and service tickets with travel history.
 

@@ -4,6 +4,8 @@ import com.Incamar.IncaCore.documentation.auth.*;
 import com.Incamar.IncaCore.dtos.auth.*;
 import com.Incamar.IncaCore.dtos.auth.LoginRes;
 import com.Incamar.IncaCore.dtos.users.UserSearchRes;
+import com.Incamar.IncaCore.enums.Role;
+import com.Incamar.IncaCore.security.RegistrationAccessPolicy;
 import com.Incamar.IncaCore.services.AuthService;
 import com.Incamar.IncaCore.utils.ApiResult;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,11 +27,16 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
   private final AuthService authService;
+  private final RegistrationAccessPolicy registrationAccessPolicy;
 
   @RegisterEndpointDoc
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("@registrationAccessPolicy.canRegister(authentication)")
   @PostMapping("/register")
-  public ResponseEntity<?> register(@RequestBody @Valid RegisterReq request) {
+  public ResponseEntity<?> register(@RequestBody @Valid RegisterReq request, Authentication authentication) {
+    if (registrationAccessPolicy.isPublicDemoRegistration(authentication)
+            && Role.ADMIN.equals(request.role())) {
+      throw new AccessDeniedException("El registro público no permite crear administradores");
+    }
     UserSearchRes response = authService.register(request);
     return ResponseEntity.status(HttpStatus.CREATED)
             .body(ApiResult.success(response,"Registro completado con éxito"));

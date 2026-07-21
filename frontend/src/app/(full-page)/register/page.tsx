@@ -17,9 +17,8 @@ export default function RegisterPage() {
   const DEPARTMENTS = ["INVENTORY", "MAINTENANCE", "VESSEL"] as const;
   type Department = (typeof DEPARTMENTS)[number];
   const ROLE_LABELS: Record<string, string> = {
-    ADMIN: "Administrador",
-    OPERATIONS_MANAGER: "Jefe de Operaciones",
-    WAREHOUSE_STAFF: "Personal de Almacén",
+    SUPERVISOR: "Encargado",
+    OPERATOR: "Personal",
   };
   const DEPT_LABELS: Record<Department, string> = {
     INVENTORY: "Inventario",
@@ -243,9 +242,8 @@ export default function RegisterPage() {
               showSearch
               optionFilterProp="label"
               options={[
-                { value: "ADMIN", label: ROLE_LABELS["ADMIN"] },
-                { value: "OPERATIONS_MANAGER", label: ROLE_LABELS["OPERATIONS_MANAGER"] },
-                { value: "WAREHOUSE_STAFF", label: ROLE_LABELS["WAREHOUSE_STAFF"] },
+                { value: "SUPERVISOR", label: ROLE_LABELS["SUPERVISOR"] },
+                { value: "OPERATOR", label: ROLE_LABELS["OPERATOR"] },
               ]}
             />
           </Form.Item>
