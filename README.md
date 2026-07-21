@@ -59,7 +59,7 @@ The `prod` Spring profile validates the database schema and disables SQL logging
   <td style="padding-left: 15px;">
         <h1 style="color: #007bff; font-size: 2.8rem; margin: 0; text-align: left;">
           <a 
-            href="https://incacore.vercel.app/" 
+            href="https://incacore-mu.vercel.app/"
             style="text-decoration: none; color: inherit;"
           >
             · INCACORE ·
@@ -105,7 +105,7 @@ The `prod` Spring profile validates the database schema and disables SQL logging
   <span style="color: #aaa;"> · </span>
   <a href="#" style="margin: 0 15px; text-decoration: none; color: #007bff;">🎥 Demo Video</a>
   <span style="color: #aaa;"> · </span>
-  <a href="https://incacore.vercel.app/" style="margin: 0 15px; text-decoration: none; color: #007bff;">🚀 Deploy</a>
+  <a href="https://incacore-mu.vercel.app/" style="margin: 0 15px; text-decoration: none; color: #007bff;">🚀 Deploy</a>
   <span style="color: #aaa;"> · </span>
   <a href="#" style="margin: 0 15px; text-decoration: none; color: #007bff;">📊 Presentación</a>
 </div>
@@ -696,8 +696,8 @@ README.md        # Documentación general del proyecto
 
 ## 🌐 Enlaces finales (producción)
 
-- Frontend: [https://incacore.vercel.app/login?from=%2F](https://incacore.vercel.app/login?from=%2F)
-- Backend: [https://footalent-03.onrender.com/swagger-ui/index.html](https://footalent-03.onrender.com/swagger-ui/index.html)
+- Frontend: [https://incacore-mu.vercel.app](https://incacore-mu.vercel.app)
+- Backend (Swagger): [https://incacore.onrender.com/swagger-ui/index.html](https://incacore.onrender.com/swagger-ui/index.html)
 
 ## ⚙ Detalles técnicos
 
