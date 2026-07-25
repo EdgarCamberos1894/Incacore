@@ -1,6 +1,7 @@
 package com.Incamar.IncaCore.dtos.stock;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,5 +16,6 @@ public class StockUpdateDto {
 
     @Schema(description = "Cantidad mínima permitida antes de reposición", example = "20")
     @NotNull(message = "El stock minimo es obligatorio")
+    @Min(value = 0, message = "El stock minimo no puede ser negativo")
     private Long stockMin;
 }

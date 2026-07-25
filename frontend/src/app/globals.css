@@ -1,8 +1,7 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
-@import "tailwindcss";
+@import "tailwindcss" source("../");
 
 @theme {
-  --font-primary: DM sans, sans-serif;
+  --font-primary: Arial, Helvetica, sans-serif;
 
   --text-title: 36px;
   --text-title--font-weight: 700;
@@ -28,7 +27,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-rubik), sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 @media (min-width: 1024px) {

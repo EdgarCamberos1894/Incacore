@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MaintenanceOrderRepository extends JpaRepository<MaintenanceOrder, Long> {
+    boolean existsByMaintenanceReason(String maintenanceReason);
     Page<MaintenanceOrder> findByVessel_NameContainingIgnoreCase(String partialName, Pageable pageable);
     Page<MaintenanceOrder> findByMaintenanceTypeContainingIgnoreCase(String maintenanceType, Pageable pageable);
     Page<MaintenanceOrder> findByStatusContainingIgnoreCase(String maintenanceOrderStatus, Pageable pageable);

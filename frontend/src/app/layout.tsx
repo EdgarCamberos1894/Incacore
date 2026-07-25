@@ -1,17 +1,10 @@
 import type { Metadata } from "next";
-import { DM_Sans } from "next/font/google";
 import "antd/dist/reset.css";
 import "./globals.css";
 import ReactQueryProvider from "@/contexts/ReactQueryProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ConfigProvider, theme as antdTheme } from "antd";
 import esES from "antd/locale/es_ES";
-
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
 
 export const metadata: Metadata = {
   title: "IncaCore",
@@ -21,9 +14,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${dmSans.variable} antialiased`}>
+      <body className="antialiased">
         <ConfigProvider
           locale={esES}
+          wave={{ disabled: true }}
           theme={{
             algorithm: antdTheme.defaultAlgorithm,
             token: {
@@ -37,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               // Using #49649B as an assumption for the second swatch (please confirm)
               colorInfo: "#49649B",
               borderRadius: 6,
-              fontFamily: "var(--font-dm-sans), DM Sans, sans-serif",
+              fontFamily: "Arial, Helvetica, sans-serif",
               // Typography scale per spec
               // fontSize: 18, // body
               // fontSizeLG: 18,

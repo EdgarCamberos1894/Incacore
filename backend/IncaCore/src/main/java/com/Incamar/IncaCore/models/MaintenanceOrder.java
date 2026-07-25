@@ -72,6 +72,8 @@ public class MaintenanceOrder {
 
     @PrePersist
     protected void onCreate() {
-        issuedAt = LocalDate.now();
+        if (issuedAt == null) {
+            issuedAt = LocalDate.now();
+        }
     }
 }

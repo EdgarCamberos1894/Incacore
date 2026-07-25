@@ -2,7 +2,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import type { NormalizedApiError } from "@/types/api";
 
-const apiOrigin = process.env.NEXT_PUBLIC_API_URL ?? "https://footalent-03.onrender.com";
+const apiOrigin = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
 const api = axios.create({
   baseURL: `${apiOrigin}/api`,
