@@ -15,4 +15,6 @@ import java.util.List;
 public interface MovementDetailsRepository extends JpaRepository<MovementDetails, Long> {
     List<MovementDetails> findByInventoryMovementId(Long id);
 
+    List<MovementDetails> findByInventoryMovementIdOrderByIdAsc(Long id);
+
 }
