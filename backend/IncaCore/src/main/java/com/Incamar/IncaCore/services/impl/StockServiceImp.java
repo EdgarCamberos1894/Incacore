@@ -4,6 +4,7 @@ import com.Incamar.IncaCore.dtos.stock.StockRequesDto;
 import com.Incamar.IncaCore.dtos.stock.StockResponseDto;
 import com.Incamar.IncaCore.dtos.stock.StockUpdateDto;
 import com.Incamar.IncaCore.enums.MovementType;
+import com.Incamar.IncaCore.events.LowStockAlertEvent;
 import com.Incamar.IncaCore.exceptions.ResourceNotFoundException;
 import com.Incamar.IncaCore.mappers.StockMapper;
 import com.Incamar.IncaCore.models.ItemWarehouse;
@@ -14,9 +15,9 @@ import com.Incamar.IncaCore.repositories.ItemWarehouseRepository;
 import com.Incamar.IncaCore.repositories.StockRepository;
 import com.Incamar.IncaCore.repositories.UserRepository;
 import com.Incamar.IncaCore.repositories.WarehouseRepository;
-import com.Incamar.IncaCore.services.EmailService;
 import com.Incamar.IncaCore.services.StockService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class StockServiceImp implements StockService {
     private final ItemWarehouseRepository itemWarehouseRepository;
     private final StockMapper stockMapper;
     private final StockRepository stockRepository;
-    private final EmailService emailService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public StockResponseDto createStock(StockRequesDto stockRequesDto) {
@@ -89,12 +90,13 @@ public class StockServiceImp implements StockService {
                         itemWarehouseRepository.getReferenceById(itemWarehouseId))
                 .orElseThrow(() -> new ResourceNotFoundException("Stock no encontrado"));
 
+        LowStockAlertEvent alert = null;
         if (movementType == MovementType.ENTRADA) {
             stock.setStock(stock.getStock() + quantity);
         } else {
             stock.setStock(stock.getStock() - quantity);
             if (stock.getStock() <= stock.getStockMin()) {
-                emailService.sendStockAlertEmail(
+                alert = new LowStockAlertEvent(
                         responsible.getEmail(),
                         responsible.getEmployee().getFirstName() + " " + responsible.getEmployee().getLastName(),
                         stock.getItemWarehouse().getName(),
@@ -106,5 +108,8 @@ public class StockServiceImp implements StockService {
         }
 
         stockRepository.save(stock);
+        if (alert != null) {
+            eventPublisher.publishEvent(alert);
+        }
     }
 }

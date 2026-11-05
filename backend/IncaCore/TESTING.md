@@ -22,10 +22,12 @@ El workflow `backend-unit-tests.yml` corre en cada PR y push a
 ## Integración transaccional con PostgreSQL real
 
 `InventoryMovementTransactionIT` utiliza Testcontainers + PostgreSQL 16 y
-verifica seis escenarios: creación y eliminación exitosas, rollback en
+verifica diez escenarios: creación y eliminación exitosas, rollback en
 creación y eliminación si falla el stock de un segundo ítem después de haber
 actualizado el primero, y dos operaciones concurrentes sobre un mismo stock
-(incluyendo movimientos de varios ítems en orden inverso). Los datos son
+(incluyendo movimientos de varios ítems en orden inverso). También cubre el
+envío de alertas de stock únicamente tras un commit, su omisión ante rollback
+y que un error del proveedor no revierta el inventario confirmado. Los datos son
 temporales; Hibernate genera el esquema `incacore` sin aplicar las migraciones
 productivas.
 
@@ -47,6 +49,10 @@ y que ambas operaciones acumulen sus cambios. Las filas de stock se bloquean
 con `PESSIMISTIC_WRITE` en una sola consulta sin joins (evitando el bloqueo
 posterior a una lectura obsoleta) dentro de transacciones del servicio, y los
 movimientos de varios ítems adquieren bloqueos por ID ascendente para reducir
-interbloqueos. No se valida todavía la coordinación del envío de alertas de
-correo con el commit ni otros flujos que puedan modificar existencias fuera de
-estos servicios.
+interbloqueos. Las alertas se publican como eventos inmutables y se entregan
+mediante `@TransactionalEventListener(AFTER_COMMIT)`, sin bloquear el commit
+ni alterar su resultado si el proveedor falla. La entrega es de mejor esfuerzo:
+no se garantiza reintento ni persistencia de la alerta si el proceso cae justo
+después del commit. Eso requeriría un outbox transaccional y un worker.
+Tampoco se validan aquí otros flujos que modifiquen existencias fuera de estos
+servicios.
