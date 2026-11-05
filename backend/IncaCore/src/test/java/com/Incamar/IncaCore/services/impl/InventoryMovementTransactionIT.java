@@ -6,10 +6,12 @@ import com.Incamar.IncaCore.dtos.inventory.MovementDetailsRequestDto;
 import com.Incamar.IncaCore.enums.AccountStatus;
 import com.Incamar.IncaCore.enums.MovementType;
 import com.Incamar.IncaCore.enums.Role;
+import com.Incamar.IncaCore.events.LowStockAlertEmailListener;
 import com.Incamar.IncaCore.exceptions.ResourceNotFoundException;
 import com.Incamar.IncaCore.mappers.InventoryMovementMapper;
 import com.Incamar.IncaCore.mappers.StockMapper;
 import com.Incamar.IncaCore.models.InventoryMovement;
+import com.Incamar.IncaCore.models.Employee;
 import com.Incamar.IncaCore.models.ItemWarehouse;
 import com.Incamar.IncaCore.models.MovementDetails;
 import com.Incamar.IncaCore.models.Stock;
@@ -55,6 +57,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -67,7 +72,7 @@ import static org.mockito.Mockito.when;
         "spring.jpa.hibernate.ddl-auto=create-drop"
 })
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({InventoryMovementServiceImp.class, StockServiceImp.class})
+@Import({InventoryMovementServiceImp.class, StockServiceImp.class, LowStockAlertEmailListener.class})
 @Testcontainers
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class InventoryMovementTransactionIT {
@@ -214,6 +219,80 @@ class InventoryMovementTransactionIT {
         assertThat(reloadFirstStock()).isEqualTo(14L);
         assertThat(inventoryMovementRepository.existsById(movement.getId())).isFalse();
         assertThat(movementDetailsRepository.findByInventoryMovementId(movement.getId())).isEmpty();
+    }
+
+    @Test
+    void lowStockEmailIsSentOnlyAfterTheOuterTransactionCommits() {
+        attachEmployeeName();
+
+        new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
+            stockService.updateStock(warehouse.getId(), firstItem.getId(), 10L,
+                    MovementType.SALIDA, responsible);
+            verifyNoInteractions(emailService);
+        });
+
+        assertThat(reloadFirstStock()).isZero();
+        verify(emailService).sendStockAlertEmail(
+                responsible.getEmail(), "Test Operator", firstItem.getName(),
+                0L, warehouse.getName(), 0L);
+    }
+
+    @Test
+    void lowStockEmailIsNotSentIfTheOuterTransactionRollsBack() {
+        attachEmployeeName();
+
+        assertThatThrownBy(() -> new TransactionTemplate(transactionManager)
+                .executeWithoutResult(status -> {
+                    stockService.updateStock(warehouse.getId(), firstItem.getId(), 10L,
+                            MovementType.SALIDA, responsible);
+                    throw new IllegalStateException("Rollback deliberado para verificar alertas");
+                })).isInstanceOf(IllegalStateException.class);
+
+        assertThat(reloadFirstStock()).isEqualTo(10L);
+        verifyNoInteractions(emailService);
+    }
+
+    @Test
+    void failedOutgoingMovementDoesNotEmailAboutRolledBackStock() {
+        attachEmployeeName();
+        mockCreationMapping();
+        InventoryMovementRequestDto request = requestWithDetails(
+                new MovementDetailsRequestDto(firstItem.getId(), 10L),
+                new MovementDetailsRequestDto(secondItem.getId(), 2L));
+        request.setMovementType(MovementType.SALIDA);
+
+        assertThatThrownBy(() -> inventoryMovementService.createInventory(request))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("Stock no encontrado");
+
+        assertThat(reloadFirstStock()).isEqualTo(10L);
+        assertThat(inventoryMovementRepository.existsByReason(request.getReason())).isFalse();
+        verifyNoInteractions(emailService);
+    }
+
+    @Test
+    void emailProviderFailureAfterCommitDoesNotUndoInventoryOrFailTheRequest() {
+        attachEmployeeName();
+        doThrow(new IllegalStateException("Proveedor de correo no disponible"))
+                .when(emailService).sendStockAlertEmail(
+                        responsible.getEmail(), "Test Operator", firstItem.getName(),
+                        0L, warehouse.getName(), 0L);
+
+        new TransactionTemplate(transactionManager).executeWithoutResult(status ->
+                stockService.updateStock(warehouse.getId(), firstItem.getId(), 10L,
+                        MovementType.SALIDA, responsible));
+
+        assertThat(reloadFirstStock()).isZero();
+        verify(emailService).sendStockAlertEmail(
+                responsible.getEmail(), "Test Operator", firstItem.getName(),
+                0L, warehouse.getName(), 0L);
+    }
+
+    private void attachEmployeeName() {
+        Employee employee = new Employee();
+        employee.setFirstName("Test");
+        employee.setLastName("Operator");
+        responsible.setEmployee(employee);
     }
 
     @Test
