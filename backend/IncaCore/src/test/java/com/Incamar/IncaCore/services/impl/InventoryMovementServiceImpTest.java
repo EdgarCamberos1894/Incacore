@@ -61,7 +61,7 @@ class InventoryMovementServiceImpTest {
         InventoryMovement movement = movement(originalType, responsible);
         MovementDetails detail = detail(movement);
         when(movements.findById(5L)).thenReturn(Optional.of(movement));
-        when(details.findByInventoryMovementId(5L)).thenReturn(List.of(detail));
+        when(details.findByInventoryMovementIdOrderByIdAsc(5L)).thenReturn(List.of(detail));
 
         service.deleteById(5L);
 
@@ -87,7 +87,7 @@ class InventoryMovementServiceImpTest {
         InventoryMovement movement = movement(MovementType.SALIDA, responsible);
         MovementDetails detail = detail(movement);
         when(movements.findById(5L)).thenReturn(Optional.of(movement));
-        when(details.findByInventoryMovementId(5L)).thenReturn(List.of(detail));
+        when(details.findByInventoryMovementIdOrderByIdAsc(5L)).thenReturn(List.of(detail));
         doThrow(new IllegalStateException("Stock no disponible"))
                 .when(stock).updateStock(10L, 20L, 4L, MovementType.ENTRADA, responsible);
 

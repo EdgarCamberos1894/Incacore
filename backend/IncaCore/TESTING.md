@@ -19,6 +19,26 @@ Desde `backend/IncaCore/`:
 El workflow `backend-unit-tests.yml` corre en cada PR y push a
 `feature/portfolio-demo`, la rama usada por el despliegue público de INCACORE.
 
-Estas pruebas no equivalen a una verificación transaccional con PostgreSQL:
-los movimientos con múltiples detalles todavía requieren pruebas de integración
-para comprobar atomicidad y consistencia ante errores intermedios.
+## Integración transaccional con PostgreSQL real
+
+`InventoryMovementTransactionIT` utiliza Testcontainers + PostgreSQL 16 y
+verifica cuatro escenarios: creación y eliminación exitosas, y rollback en
+creación y eliminación si falla el stock de un segundo ítem después de haber
+actualizado el primero. Los datos son temporales, el esquema `incacore` se
+genera mediante Hibernate y no se aplican migraciones productivas.
+
+Se requiere Docker para ejecutar las pruebas de integración localmente:
+
+```bash
+./mvnw -B -ntp '-Dtest=*IT' test
+```
+
+El workflow `postgres-integration-tests.yml` las ejecuta en CI con Docker
+en cada PR y push relevante a `feature/portfolio-demo`. El comando normal
+`./mvnw test` sigue ejecutando únicamente las pruebas unitarias rápidas.
+
+Importante: estas pruebas desactivan la transacción que `@DataJpaTest` abre
+por defecto. Así verifican que **el servicio** define los límites de la
+transacción y que las escrituras ya confirmadas se revierten ante un fallo.
+No validan todavía concurrencia sobre la misma existencia (lost updates) ni
+el envío de alertas de correo coordinado con el commit de la transacción.

@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,7 @@ public class  InventoryMovementServiceImp implements InventoryMovementService {
 
 
     @Override
+    @Transactional
     public InventoryMovementResponseDto createInventory(InventoryMovementRequestDto requestDto) {
         User responsible = authService.getAuthenticatedUser()
                 .orElseThrow(()->new  ResourceNotFoundException("Usuario no encontrado."));
@@ -102,10 +104,11 @@ public class  InventoryMovementServiceImp implements InventoryMovementService {
     }
 
     @Override
+    @Transactional
     public void deleteById(Long id) {
         InventoryMovement inventoryMovement = inventoryMovementRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Movimiento de inventario no encontrado con id: " + id));
-        List<MovementDetails> movementDetails = movementDetailsRepository.findByInventoryMovementId(id);
+        List<MovementDetails> movementDetails = movementDetailsRepository.findByInventoryMovementIdOrderByIdAsc(id);
 
         for (MovementDetails detail : movementDetails) {
             Long warehouseId = inventoryMovement.getWarehouse().getId();
