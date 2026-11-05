@@ -44,7 +44,8 @@ por defecto. Así verifican que **el servicio** define los límites de la
 transacción y que las escrituras ya confirmadas se revierten ante un fallo.
 Los tests concurrentes comprueban que el segundo escritor espere al primero
 y que ambas operaciones acumulen sus cambios. Las filas de stock se bloquean
-con `PESSIMISTIC_WRITE` dentro de transacciones del servicio, y los
+con `PESSIMISTIC_WRITE` en una sola consulta sin joins (evitando el bloqueo
+posterior a una lectura obsoleta) dentro de transacciones del servicio, y los
 movimientos de varios ítems adquieren bloqueos por ID ascendente para reducir
 interbloqueos. No se valida todavía la coordinación del envío de alertas de
 correo con el commit ni otros flujos que puedan modificar existencias fuera de

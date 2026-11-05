@@ -84,7 +84,9 @@ public class StockServiceImp implements StockService {
     @Override
     @Transactional
     public void updateStock( Long warehouseId, Long itemWarehouseId, Long quantity, MovementType movementType, User responsible) {
-        Stock stock = stockRepository.findByWarehouseIdAndItemWarehouseId(warehouseId, itemWarehouseId)
+        Stock stock = stockRepository.findForUpdate(
+                        warehouseRepository.getReferenceById(warehouseId),
+                        itemWarehouseRepository.getReferenceById(itemWarehouseId))
                 .orElseThrow(() -> new ResourceNotFoundException("Stock no encontrado"));
 
         if (movementType == MovementType.ENTRADA) {
