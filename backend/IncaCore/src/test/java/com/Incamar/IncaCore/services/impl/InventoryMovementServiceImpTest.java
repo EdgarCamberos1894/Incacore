@@ -97,6 +97,25 @@ class InventoryMovementServiceImpTest {
         verify(movements, never()).delete(movement);
     }
 
+    @Test
+    void deletingMovementLocksStockInItemIdOrderRatherThanDetailOrder() {
+        User responsible = new User();
+        InventoryMovement movement = movement(MovementType.SALIDA, responsible);
+        MovementDetails laterItem = detail(movement);
+        laterItem.getItemWarehouse().setId(30L);
+        MovementDetails earlierItem = detail(movement);
+        earlierItem.getItemWarehouse().setId(20L);
+        when(movements.findById(5L)).thenReturn(Optional.of(movement));
+        when(details.findByInventoryMovementIdOrderByIdAsc(5L))
+                .thenReturn(List.of(laterItem, earlierItem));
+
+        service.deleteById(5L);
+
+        var stockUpdates = org.mockito.Mockito.inOrder(stock);
+        stockUpdates.verify(stock).updateStock(10L, 20L, 4L, MovementType.ENTRADA, responsible);
+        stockUpdates.verify(stock).updateStock(10L, 30L, 4L, MovementType.ENTRADA, responsible);
+    }
+
     private static InventoryMovement movement(MovementType type, User responsible) {
         Warehouse warehouse = new Warehouse();
         warehouse.setId(10L);

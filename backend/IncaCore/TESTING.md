@@ -22,10 +22,12 @@ El workflow `backend-unit-tests.yml` corre en cada PR y push a
 ## Integración transaccional con PostgreSQL real
 
 `InventoryMovementTransactionIT` utiliza Testcontainers + PostgreSQL 16 y
-verifica cuatro escenarios: creación y eliminación exitosas, y rollback en
+verifica seis escenarios: creación y eliminación exitosas, rollback en
 creación y eliminación si falla el stock de un segundo ítem después de haber
-actualizado el primero. Los datos son temporales, el esquema `incacore` se
-genera mediante Hibernate y no se aplican migraciones productivas.
+actualizado el primero, y dos operaciones concurrentes sobre un mismo stock
+(incluyendo movimientos de varios ítems en orden inverso). Los datos son
+temporales; Hibernate genera el esquema `incacore` sin aplicar las migraciones
+productivas.
 
 Se requiere Docker para ejecutar las pruebas de integración localmente:
 
@@ -40,5 +42,10 @@ en cada PR y push relevante a `feature/portfolio-demo`. El comando normal
 Importante: estas pruebas desactivan la transacción que `@DataJpaTest` abre
 por defecto. Así verifican que **el servicio** define los límites de la
 transacción y que las escrituras ya confirmadas se revierten ante un fallo.
-No validan todavía concurrencia sobre la misma existencia (lost updates) ni
-el envío de alertas de correo coordinado con el commit de la transacción.
+Los tests concurrentes comprueban que el segundo escritor espere al primero
+y que ambas operaciones acumulen sus cambios. Las filas de stock se bloquean
+con `PESSIMISTIC_WRITE` dentro de transacciones del servicio, y los
+movimientos de varios ítems adquieren bloqueos por ID ascendente para reducir
+interbloqueos. No se valida todavía la coordinación del envío de alertas de
+correo con el commit ni otros flujos que puedan modificar existencias fuera de
+estos servicios.
