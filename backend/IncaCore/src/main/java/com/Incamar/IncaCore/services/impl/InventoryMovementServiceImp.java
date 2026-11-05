@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -58,19 +59,24 @@ public class  InventoryMovementServiceImp implements InventoryMovementService {
 
         List<MovementDetails> movementDetails = new ArrayList<>();
         for (MovementDetailsRequestDto detail : requestDto.getMovementDetails()) {
-            stockService.updateStock(
-                    warehouse.getId(),
-                    detail.getItemWarehouseId(),
-                    detail.getQuantity(),
-                    requestDto.getMovementType(),
-                    responsible
-            );
-
             MovementDetails md = new MovementDetails();
             md.setInventoryMovement(inventoryMovement);
             md.setItemWarehouse(itemsById.get(detail.getItemWarehouseId()));
             md.setQuantity(detail.getQuantity());
             movementDetails.add(md);
+        }
+
+        // Lock stock rows in a consistent order across simultaneous movements.
+        for (MovementDetails detail : movementDetails.stream()
+                .sorted(Comparator.comparing(md -> md.getItemWarehouse().getId()))
+                .toList()) {
+            stockService.updateStock(
+                    warehouse.getId(),
+                    detail.getItemWarehouse().getId(),
+                    detail.getQuantity(),
+                    requestDto.getMovementType(),
+                    responsible
+            );
         }
 
         movementDetailsRepository.saveAll(movementDetails);
@@ -110,7 +116,10 @@ public class  InventoryMovementServiceImp implements InventoryMovementService {
                 .orElseThrow(() -> new ResourceNotFoundException("Movimiento de inventario no encontrado con id: " + id));
         List<MovementDetails> movementDetails = movementDetailsRepository.findByInventoryMovementIdOrderByIdAsc(id);
 
-        for (MovementDetails detail : movementDetails) {
+        // The same row-lock order as creation prevents inverse-order deadlocks.
+        for (MovementDetails detail : movementDetails.stream()
+                .sorted(Comparator.comparing(md -> md.getItemWarehouse().getId()))
+                .toList()) {
             Long warehouseId = inventoryMovement.getWarehouse().getId();
             Long itemWarehouseId = detail.getItemWarehouse().getId();
             Long quantity = detail.getQuantity();

@@ -29,11 +29,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -42,6 +44,12 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -96,6 +104,12 @@ class InventoryMovementTransactionIT {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private StockServiceImp stockService;
+
+    @Autowired
+    private PlatformTransactionManager transactionManager;
 
     @MockitoBean
     private InventoryMovementMapper inventoryMovementMapper;
@@ -200,6 +214,98 @@ class InventoryMovementTransactionIT {
         assertThat(reloadFirstStock()).isEqualTo(14L);
         assertThat(inventoryMovementRepository.existsById(movement.getId())).isFalse();
         assertThat(movementDetailsRepository.findByInventoryMovementId(movement.getId())).isEmpty();
+    }
+
+    @Test
+    void concurrentStockUpdatesWaitForTheRowLockAndAccumulateBothChanges() throws Exception {
+        CountDownLatch firstHasUpdated = new CountDownLatch(1);
+        CountDownLatch allowFirstCommit = new CountDownLatch(1);
+        CountDownLatch secondStarted = new CountDownLatch(1);
+        ExecutorService workers = Executors.newFixedThreadPool(2);
+
+        try {
+            Future<?> first = workers.submit(() -> new TransactionTemplate(transactionManager)
+                    .executeWithoutResult(status -> {
+                        stockService.updateStock(warehouse.getId(), firstItem.getId(), 4L,
+                                MovementType.ENTRADA, responsible);
+                        firstHasUpdated.countDown();
+                        awaitLatch(allowFirstCommit);
+                    }));
+
+            awaitLatch(firstHasUpdated);
+            Future<?> second = workers.submit(() -> {
+                secondStarted.countDown();
+                stockService.updateStock(warehouse.getId(), firstItem.getId(), 7L,
+                        MovementType.ENTRADA, responsible);
+            });
+            awaitLatch(secondStarted);
+
+            // A concurrent writer must not read stale stock before T1 commits.
+            assertThatThrownBy(() -> second.get(300, TimeUnit.MILLISECONDS))
+                    .isInstanceOf(TimeoutException.class);
+
+            allowFirstCommit.countDown();
+            first.get(15, TimeUnit.SECONDS);
+            second.get(15, TimeUnit.SECONDS);
+            assertThat(reloadFirstStock()).isEqualTo(21L);
+        } finally {
+            allowFirstCommit.countDown();
+            workers.shutdownNow();
+        }
+    }
+
+    @Test
+    void simultaneousMovementsWithOppositeDetailOrdersKeepBothStocksConsistent() throws Exception {
+        Stock secondStock = new Stock();
+        secondStock.setWarehouse(warehouse);
+        secondStock.setItemWarehouse(secondItem);
+        secondStock.setStock(6L);
+        secondStock.setStockMin(0L);
+        secondStock = stockRepository.saveAndFlush(secondStock);
+
+        mockCreationMapping();
+        InventoryMovementRequestDto firstRequest = requestWithDetails(
+                new MovementDetailsRequestDto(secondItem.getId(), 3L),
+                new MovementDetailsRequestDto(firstItem.getId(), 4L));
+        InventoryMovementRequestDto secondRequest = requestWithDetails(
+                new MovementDetailsRequestDto(firstItem.getId(), 7L),
+                new MovementDetailsRequestDto(secondItem.getId(), 5L));
+        CountDownLatch startTogether = new CountDownLatch(1);
+        ExecutorService workers = Executors.newFixedThreadPool(2);
+
+        try {
+            Future<?> first = workers.submit(() -> {
+                awaitLatch(startTogether);
+                return inventoryMovementService.createInventory(firstRequest);
+            });
+            Future<?> second = workers.submit(() -> {
+                awaitLatch(startTogether);
+                return inventoryMovementService.createInventory(secondRequest);
+            });
+
+            startTogether.countDown();
+            first.get(15, TimeUnit.SECONDS);
+            second.get(15, TimeUnit.SECONDS);
+
+            assertThat(reloadFirstStock()).isEqualTo(21L);
+            assertThat(stockRepository.findById(secondStock.getId()).orElseThrow().getStock()).isEqualTo(14L);
+            assertThat(inventoryMovementRepository.existsByReason(firstRequest.getReason())).isTrue();
+            assertThat(inventoryMovementRepository.existsByReason(secondRequest.getReason())).isTrue();
+        } finally {
+            startTogether.countDown();
+            workers.shutdownNow();
+        }
+    }
+
+    private static void awaitLatch(CountDownLatch latch) {
+        try {
+            if (!latch.await(10, TimeUnit.SECONDS)) {
+                throw new AssertionError("Timed out waiting for concurrent test coordination");
+            }
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Concurrent test interrupted", exception);
+        }
     }
 
     private Long reloadFirstStock() {

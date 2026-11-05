@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
@@ -81,8 +82,11 @@ public class StockServiceImp implements StockService {
     }
 
     @Override
+    @Transactional
     public void updateStock( Long warehouseId, Long itemWarehouseId, Long quantity, MovementType movementType, User responsible) {
-        Stock stock = stockRepository.findByWarehouseIdAndItemWarehouseId(warehouseId, itemWarehouseId)
+        Stock stock = stockRepository.findForUpdate(
+                        warehouseRepository.getReferenceById(warehouseId),
+                        itemWarehouseRepository.getReferenceById(itemWarehouseId))
                 .orElseThrow(() -> new ResourceNotFoundException("Stock no encontrado"));
 
         if (movementType == MovementType.ENTRADA) {
