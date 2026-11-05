@@ -188,7 +188,7 @@ class InventoryMovementTransactionIT {
 
         assertThat(reloadFirstStock()).isEqualTo(10L);
         assertThat(inventoryMovementRepository.existsById(movement.getId())).isTrue();
-        assertThat(movementDetailsRepository.findByInventoryMovementId(movement.getId()))).hasSize(2);
+        assertThat(movementDetailsRepository.findByInventoryMovementId(movement.getId())).hasSize(2);
     }
 
     @Test
@@ -199,7 +199,7 @@ class InventoryMovementTransactionIT {
 
         assertThat(reloadFirstStock()).isEqualTo(14L);
         assertThat(inventoryMovementRepository.existsById(movement.getId())).isFalse();
-        assertThat(movementDetailsRepository.findByInventoryMovementId(movement.getId()))).isEmpty();
+        assertThat(movementDetailsRepository.findByInventoryMovementId(movement.getId())).isEmpty();
     }
 
     private Long reloadFirstStock() {
